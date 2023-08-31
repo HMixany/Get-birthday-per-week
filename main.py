@@ -1,13 +1,10 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
 def get_birthdays_per_week(users):
     result = {}
-    days_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', "Friday"]
-
     today = date.today()
-    delta = datetime(2023, 10, 10).date() - datetime(2023, 10, 3).date()
-    final_date = today + delta
+    final_date = today + timedelta(weeks=1)
 
     for user in users:
         if today.year != final_date.year and user['birthday'].month == 1:
@@ -16,18 +13,25 @@ def get_birthdays_per_week(users):
             curent = datetime(today.year, user['birthday'].month, user['birthday'].day).date()
 
         if today <= curent < final_date:
-            if curent.weekday() == 5 or curent.weekday() == 6:
-                if result.get(days_week[0]) is None:
-                    result[days_week[0]] = [(user['name'])]
+            if curent.strftime('%A') in ('Saturday', 'Sunday'):
+                if today.strftime('%A') == 'Monday':
+                    continue
+                if 'Monday' in result:
+                    result['Monday'].append(user['name'])
                 else:
-                    result[days_week[0]].append(user['name'])
+                    result['Monday'] = [(user['name'])]
             else:
-                if result.get(days_week[curent.weekday()]) is None:
-                    result[days_week[curent.weekday()]] = [(user['name'])]
+                if curent.strftime('%A') in result:
+                    result[curent.strftime('%A')].append(user['name'])
                 else:
-                    result[days_week[curent.weekday()]].append(user['name'])
+                    result[curent.strftime('%A')] = [(user['name'])]
 
     return result
+
+
+def result_output(result):
+    for day_name, names in result.items():
+        print(f"{day_name}: {', '.join(names)}")
 
 
 if __name__ == "__main__":
@@ -38,5 +42,4 @@ if __name__ == "__main__":
     result = get_birthdays_per_week(users)
     print(result)
     # Виводимо результат
-    for day_name, names in result.items():
-        print(f"{day_name}: {', '.join(names)}")
+    result_output(result)
